@@ -15,4 +15,8 @@
         <item name="android:minHeight">@dimen/toolbar_min_height</item>
         <item name="fontFamily">@font/roboto</item>
     </style>
+
+    <style name="TitleTextAppearance" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textColor">@color/colorTextTitle</item>
+    </style>
 </resources>

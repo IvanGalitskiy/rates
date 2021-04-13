@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Rates</string>
+    <string name="rate_image_description">Country logo</string>
+    <string name="rate_autofill_hint">Type your amount</string>
+    <string name="rate_default_hint">0</string>
 </resources>
