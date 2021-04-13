@@ -1,7 +1,8 @@
-package com.rates
+package com.rates.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.rates.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
