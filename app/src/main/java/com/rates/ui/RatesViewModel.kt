@@ -4,12 +4,16 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.rates.model.GetRatesUseCase
+import com.rates.ui.adapter.RatesToRateUiModelsAdapter
 import com.rates.utils.disposeIfNeeded
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import javax.inject.Inject
 
-class RatesViewModel(
+@HiltViewModel
+class RatesViewModel @Inject constructor(
     private val getRatesUseCase: GetRatesUseCase,
     private val ratesToRateUiModelAdapter: RatesToRateUiModelsAdapter
 ) : ViewModel() {

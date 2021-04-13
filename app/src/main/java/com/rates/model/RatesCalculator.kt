@@ -15,5 +15,5 @@ interface RatesCalculator {
     fun recalculateRatesForAmount(
         rates: Map<String, Double>,
         amount: Double
-    ): Single<Map<String, String>>
+    ): Single<Map<String, Double>>
 }
