@@ -8,11 +8,10 @@ import io.reactivex.rxjava3.core.Observable
 interface GetRatesUseCase {
     /**
      * starts observing for rates values
-     * @param baseRate for rates calculation
-     * @param amount of money for calculation
+     * @param ratesRequest contains all required data for calculation
      * @return map of rates names and values
      */
-    fun observeRates(baseRate: String, amount: Double): Observable<Map<String, Double>>
+    fun observeRates(ratesRequest: RatesRequest = RatesRequest()): Observable<Map<String, Double>>
 
     /**
      * notifies ongoing observing about base rate changing

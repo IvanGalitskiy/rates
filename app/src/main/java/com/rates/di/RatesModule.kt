@@ -1,5 +1,7 @@
 package com.rates.di
 
+import com.rates.data.NetworkRatesRepository
+import com.rates.data.RatesRepository
 import com.rates.model.GetRatesUseCase
 import com.rates.model.GetRatesUseCaseImpl
 import com.rates.model.RatesCalculator
@@ -27,4 +29,7 @@ interface RatesModule {
 
     @Binds
     fun provideRateToRateUiModelAdapter(rateToRateUiModelAdapterImpl: RateToRateUiModelAdapterImpl): RateToRateUiModelAdapter
+
+    @Binds
+    fun provideRatesRepository(ratesRepository: NetworkRatesRepository): RatesRepository
 }

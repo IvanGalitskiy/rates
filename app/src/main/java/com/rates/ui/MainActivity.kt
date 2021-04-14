@@ -24,4 +24,14 @@ class MainActivity : AppCompatActivity() {
             setHomeAsUpIndicator(R.drawable.ic_close)
         }
     }
+
+    override fun onStart() {
+        super.onStart()
+        ratesViewModel.onScreenAppeared()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        ratesViewModel.onScreenHidden()
+    }
 }
