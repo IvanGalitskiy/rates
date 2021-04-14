@@ -25,7 +25,7 @@ android {
             buildConfigField "String", "API_BASE_URL", "https://hiring.revolut.codes/api"
         }
         debug {
-            buildConfigField "String", "API_BASE_URL", "\"https://hiring.revolut.codes/api\""
+            buildConfigField "String", "API_BASE_URL", "\"https://hiring.revolut.codes/api/\""
         }
     }
 

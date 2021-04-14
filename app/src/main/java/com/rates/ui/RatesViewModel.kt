@@ -58,9 +58,4 @@ class RatesViewModel @Inject constructor(
                 ratesLiveData.postValue(RatesState.Error(it))
             })
     }
-
-    companion object {
-        private const val DEFAULT_RATE_NAME = "EUR"
-        private const val DEFAULT_RATE_AMOUNT = 0.0
-    }
 }
