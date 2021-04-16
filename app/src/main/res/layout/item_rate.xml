@@ -9,7 +9,7 @@
     android:padding="@dimen/rate_item_padding">
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/item_rate_icon"
         android:layout_width="@dimen/rate_image_size"
         android:layout_height="@dimen/rate_image_size"
         android:contentDescription="@string/rate_image_description"
@@ -23,8 +23,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/rate_to_image_margin"
         android:textAppearance="@style/TitleTextAppearance"
-        app:layout_constraintEnd_toStartOf="@+id/editText"
-        app:layout_constraintStart_toEndOf="@id/imageView"
+        app:layout_constraintEnd_toStartOf="@+id/item_rate_input"
+        app:layout_constraintStart_toEndOf="@id/item_rate_icon"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="PLN" />
 
@@ -33,22 +33,22 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:textColor="#8B959E"
-        app:layout_constraintEnd_toStartOf="@+id/editText"
+        app:layout_constraintEnd_toStartOf="@+id/item_rate_input"
         app:layout_constraintStart_toStartOf="@+id/item_rate_title"
         app:layout_constraintTop_toBottomOf="@+id/item_rate_title"
         tools:text="Polish Zloty" />
 
     <EditText
-        android:id="@+id/editText"
+        android:id="@+id/item_rate_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="99999999.123"
+        android:autofillHints="@string/rate_autofill_hint"
+        android:hint="@string/rate_default_hint"
+        android:inputType="numberDecimal"
         android:maxLength="12"
-        android:inputType="number"
         android:textSize="@dimen/rate_size"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:hint="@string/rate_default_hint"
-        android:autofillHints="@string/rate_autofill_hint"/>
+        tools:text="99999999.123" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

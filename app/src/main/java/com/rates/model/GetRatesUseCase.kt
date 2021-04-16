@@ -11,7 +11,7 @@ interface GetRatesUseCase {
      * @param ratesRequest contains all required data for calculation
      * @return map of rates names and values
      */
-    fun observeRates(ratesRequest: RatesRequest = RatesRequest()): Observable<Map<String, Double>>
+    fun observeRates(ratesRequest: RatesRequest?): Observable<List<RateModel>>
 
     /**
      * notifies ongoing observing about base rate changing

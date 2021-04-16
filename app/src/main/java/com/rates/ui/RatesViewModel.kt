@@ -42,13 +42,19 @@ class RatesViewModel @Inject constructor(
         getRatesUseCase.onBaseRateChanged(rateName, amount)
     }
 
-    fun onRateAmountChanged(amount: Double) {
-        getRatesUseCase.onRateAmountChanged(amount)
+    fun onConnectionEstablished() {
+        ratesDisposable.disposeIfNeeded()
+        startRatesObserving(null)
     }
 
     private fun startRatesObserving() {
         ratesDisposable.disposeIfNeeded()
-        ratesDisposable = getRatesUseCase.observeRates()
+        startRatesObserving(RatesRequest())
+    }
+
+    private fun startRatesObserving(ratesRequest: RatesRequest?) {
+        ratesDisposable.disposeIfNeeded()
+        ratesDisposable = getRatesUseCase.observeRates(ratesRequest)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .map { ratesToRateUiModelAdapter.map(it) }

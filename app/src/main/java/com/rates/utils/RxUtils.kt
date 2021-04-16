@@ -7,5 +7,3 @@ fun Disposable?.disposeIfNeeded() {
         dispose()
     }
 }
-
-fun Disposable?.isActive() = this != null && !isDisposed
