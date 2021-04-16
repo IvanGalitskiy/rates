@@ -1,5 +1,5 @@
 package com.rates.errors
 
-open class AppExpectedError: Throwable()
+open class AppExpectedError : Throwable()
 
-class DefaultValuesAreNotInitializedException: AppExpectedError()
+class DefaultValuesAreNotInitializedException : AppExpectedError()
