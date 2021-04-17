@@ -64,11 +64,7 @@ class RatesViewModel @Inject constructor(
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnNext {
-                if (it.rates.size == 1) {
-                    postError(NoLocalDataFoundException())
-                } else {
-                    postError(it.exception)
-                }
+                postError(it.exception)
             }
             .map { ratesToRateUiModelAdapter.map(it.rates) }
             .subscribe({
@@ -84,8 +80,8 @@ class RatesViewModel @Inject constructor(
         if (oldError == null ||
             newError == null ||
             (oldError.isNetworkError() && !newError.isNetworkError() ||
-            !oldError.isNetworkError() && newError.isNetworkError()) &&
-                    oldError::class != newError::class
+                    !oldError.isNetworkError() && newError.isNetworkError()) &&
+            oldError::class != newError::class
         ) {
             errorsLiveData.postValue(newError)
         }

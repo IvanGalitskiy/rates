@@ -5,7 +5,6 @@ import com.rates.errors.DefaultValuesAreNotInitializedException
 import com.rates.errors.NoLocalDataFoundException
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.PublishSubject
-import java.lang.IllegalStateException
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -32,50 +31,18 @@ class GetRatesUseCaseImpl(
         return if (ratesRequest == null && !this::lastRequestedRate.isInitialized) {
             Observable.error(DefaultValuesAreNotInitializedException())
         } else {
-            if (ratesRequest != null) {
-                lastRequestedRate = ratesRequest.baseRate
-                lastRequestedAmount = ratesRequest.amount
-            }
-
+            setLastRequestedData(ratesRequest)
             Observable.interval(0, requestIntervalInMillis, TimeUnit.MILLISECONDS)
                 .mergeWith(fullChangeSubject)
                 .map { RatesRequest(lastRequestedRate, lastRequestedAmount) }
-                .flatMapSingle {
-                    ratesRepository.getRates(it.baseRate)
-                        .doOnSuccess { rates ->
-                            if (rates.exception == null) {
-                                lastReturnedResponse = rates
-                            }
-                        }
-                }
-                .mergeWith(recalculateAmount())
-                .flatMapSingle { response ->
-                    ratesCalculator.recalculateRatesForAmount(
-                        response.rates,
-                        lastRequestedAmount
-                    ).map {
-                        response.copy(rates = it)
-                    }
-                }
-                .map {
-                    if (it.rates.isEmpty()) {
-                        GetRatesResponse(lastRequestedRate, lastReturnedResponse?.rates ?: emptyList(), NoLocalDataFoundException())
-                    } else {
-                        it
-                    }
-                }
-                .map {
-                    val mutableRates = it.rates.toMutableList()
-                    mutableRates.add(0, RateModel(lastRequestedRate, lastRequestedAmount))
-                    it.copy(rates = mutableRates)
-                }
+                .flatMapSingle { getRates(it) }
+                .mergeWith(recalculateAmountTrigger())
+                .flatMapSingle { recalculateAmount(it) }
+                .map { checkIfLocalResultHaveData(it) }
+                .map { addRequestedCurrencyToResponse(it) }
 
         }
     }
-
-    private fun recalculateAmount() =
-        amountChangeSubject
-            .map { lastReturnedResponse }
 
     override fun onBaseRateChanged(newBaseRate: String, amount: Double) {
         if (newBaseRate == lastRequestedRate) {
@@ -90,6 +57,50 @@ class GetRatesUseCaseImpl(
     override fun onRateAmountChanged(amount: Double) {
         lastRequestedAmount = amount
         amountChangeSubject.onNext(0)
+    }
+
+    private fun setLastRequestedData(ratesRequest: RatesRequest?) {
+        if (ratesRequest != null) {
+            lastRequestedRate = ratesRequest.baseRate
+            lastRequestedAmount = ratesRequest.amount
+        }
+    }
+
+    private fun getRates(ratesRequest: RatesRequest) =
+        ratesRepository.getRates(ratesRequest.baseRate)
+            .doOnSuccess { rates ->
+                if (rates.exception == null) {
+                    lastReturnedResponse = rates
+                }
+            }
+
+    private fun recalculateAmountTrigger() =
+        amountChangeSubject
+            .map { lastReturnedResponse }
+
+    private fun recalculateAmount(response: GetRatesResponse) =
+        ratesCalculator.recalculateRatesForAmount(
+            response.rates,
+            lastRequestedAmount
+        ).map {
+            response.copy(rates = it)
+        }
+
+    private fun checkIfLocalResultHaveData(getRatesResponse: GetRatesResponse) =
+        if (getRatesResponse.rates.isEmpty()) {
+            GetRatesResponse(
+                lastRequestedRate,
+                lastReturnedResponse?.rates ?: emptyList(),
+                NoLocalDataFoundException()
+            )
+        } else {
+            getRatesResponse
+        }
+
+    private fun addRequestedCurrencyToResponse(getRatesResponse: GetRatesResponse): GetRatesResponse {
+        val mutableRates = getRatesResponse.rates.toMutableList()
+        mutableRates.add(0, RateModel(lastRequestedRate, lastRequestedAmount))
+        return getRatesResponse.copy(rates = mutableRates)
     }
 
     companion object {

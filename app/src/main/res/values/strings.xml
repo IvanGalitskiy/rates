@@ -3,4 +3,8 @@
     <string name="rate_image_description">Country logo</string>
     <string name="rate_autofill_hint">Type your amount</string>
     <string name="rate_default_hint">0</string>
+    <string name="network_error">We are using last known data, because there is no connection</string>
+    <string name="missing_data_error">We don\'t have data for this currency. Try another one or connect to the internet</string>
+    <string name="illegal_input_error">Text should contain only numbers and dot symbol</string>
+    <string name="unexpected_error">Something went wrong. Relaunch application may help</string>
 </resources>

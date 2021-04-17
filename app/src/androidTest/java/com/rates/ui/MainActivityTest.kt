@@ -2,24 +2,38 @@ package com.rates.ui
 
 import androidx.test.core.app.launchActivity
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.*
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.ViewMatchers.*
+import com.rates.ApiStub.Companion.FIRST_TESTING_VARIANT
+import com.rates.ApiStub.Companion.SECOND_TESTING_VARIANT
 import com.rates.R
-import com.rates.model.GetRatesUseCaseImpl
-import com.rates.model.RatesRequest
-import com.rates.ui.ApiStub.Companion.FIRST_TESTING_VARIANT
-import com.rates.ui.ApiStub.Companion.SECOND_TESTING_VARIANT
+import com.rates.data.ClassToStringConverter
+import com.rates.data.DefaultRatesRepository
+import com.rates.data.MoshiRatesConverter
+import com.rates.data.RatesRepository
+import com.rates.di.RatesModule
+import com.rates.model.*
+import com.rates.ui.adapter.RatesToRateUiModelsAdapter
+import com.rates.ui.adapter.RatesToRateUiModelsAdapterImpl
 import com.rates.ui.list.RatesHolder
 import com.rates.utils.DisableAnimationsRule
 import com.rates.utils.atPosition
+import dagger.Binds
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.UninstallModules
 import org.hamcrest.CoreMatchers.allOf
 import org.junit.Rule
 import org.junit.Test
 
+@UninstallModules(RatesModule::class)
 @HiltAndroidTest
 class MainActivityTest {
     @get:Rule
@@ -27,7 +41,6 @@ class MainActivityTest {
 
     @get:Rule
     var disableAnimationsRule = DisableAnimationsRule()
-
 
     @Test
     fun shouldContainDefaultRequestedValuesAtFirstPositionWhenStarted() {
@@ -141,11 +154,50 @@ class MainActivityTest {
         )
     }
 
+    @Test
+    fun shouldDisplayErrorIfNoConnection() {
+        launchActivity<MainActivity>()
+    }
+
     private fun getFinalDisplayValue(testingVariantAmount: Double, amount: Double): String {
         return formatAmount(testingVariantAmount * amount)
     }
 
-    private fun formatAmount(amount: Double): String{
+    private fun formatAmount(amount: Double): String {
         return "%.2f".format(amount)
+    }
+
+
+    @Module
+    @InstallIn(ViewModelComponent::class)
+    abstract class TestRatesModule {
+        @Binds
+        abstract fun provideGetRatesUseCase(getRatesUseCaseImpl: GetRatesUseCaseImpl): GetRatesUseCase
+
+
+        @Binds
+        abstract fun provideRatesCalculator(ratesCalculator: RatesCalculatorImpl): RatesCalculator
+
+
+        @Binds
+        abstract fun provideRatesRepository(ratesRepository: DefaultRatesRepository): RatesRepository
+
+        companion object {
+            @Provides
+            fun converter(): ClassToStringConverter<List<RateModel>>{
+                return MoshiRatesConverter()
+            }
+
+            @Provides
+            fun provideRatesToRateUiModelsAdapter(): RatesToRateUiModelsAdapter {
+                return object : RatesToRateUiModelsAdapter {
+                    private val adapter = RatesToRateUiModelsAdapterImpl()
+                    override fun map(rates: List<RateModel>): List<RateUiModel> {
+                        return adapter.map(rates)
+                            .sortedBy { it.rateName }
+                    }
+                }
+            }
+        }
     }
 }

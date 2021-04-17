@@ -1,5 +1,6 @@
-package com.rates.ui
+package com.rates.di
 
+import com.rates.ApiStub
 import com.rates.data.RatesApi
 import com.rates.di.ApplicationModule
 import dagger.Binds

@@ -3,6 +3,7 @@ package com.rates.ui
 import android.view.View
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
+import com.rates.R
 
 object ErrorMessage {
     private val displayingErrors = mutableListOf<Snackbar>()
@@ -14,7 +15,7 @@ object ErrorMessage {
     fun showNetworkError(view: View, retryAction: View.OnClickListener?): Snackbar {
         return Snackbar.make(
             view,
-            "We are using last known data, because there is no connection",
+            view.context.getString(R.string.network_error),
             Snackbar.LENGTH_INDEFINITE
         ).apply {
             retryAction?.let {
@@ -28,7 +29,7 @@ object ErrorMessage {
     fun showNoDataError(view: View, retryAction: View.OnClickListener?): Snackbar {
         return Snackbar.make(
             view,
-            "We don't have data for this currency. Try another one or connect to the internet",
+            view.context.getString(R.string.missing_data_error),
             Snackbar.LENGTH_INDEFINITE
         ).apply {
             retryAction?.let {
@@ -42,7 +43,19 @@ object ErrorMessage {
     fun showUnexpectedTypingError(view: View): Snackbar {
         return Snackbar.make(
             view,
-            "Text should contain only numbers and dot symbol",
+            view.context.getString(R.string.illegal_input_error),
+            Snackbar.LENGTH_SHORT
+        )
+            .apply {
+                addDoDisplayingList(this)
+                show()
+            }
+    }
+
+    fun showUnexpectedError(view: View): Snackbar {
+        return Snackbar.make(
+            view,
+            view.context.getString(R.string.unexpected_error),
             Snackbar.LENGTH_SHORT
         )
             .apply {

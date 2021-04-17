@@ -1,4 +1,4 @@
-package com.rates.ui
+package com.rates
 
 import com.rates.data.RatesApi
 import com.rates.data.RatesResponse

@@ -75,13 +75,19 @@ class MainActivity : AppCompatActivity() {
                     if (binding.activityMainList.itemDecorationCount == 0) {
                         binding.activityMainList.addItemDecoration(edgeItemDecorator)
                     }
-                    if (it.isNetworkError()) {
-                        ErrorMessage.showNetworkError(binding.root) {
-                            ratesViewModel.onConnectionEstablished()
+                    when {
+                        it.isNetworkError() -> {
+                            ErrorMessage.showNetworkError(binding.root) {
+                                ratesViewModel.onConnectionEstablished()
+                            }
                         }
-                    } else if (it is NoLocalDataFoundException) {
-                        ErrorMessage.showNoDataError(binding.root) {
-                            ratesViewModel.onConnectionEstablished()
+                        it is NoLocalDataFoundException -> {
+                            ErrorMessage.showNoDataError(binding.root) {
+                                ratesViewModel.onConnectionEstablished()
+                            }
+                        }
+                        else -> {
+                            ErrorMessage.showUnexpectedError(binding.root)
                         }
                     }
                 }

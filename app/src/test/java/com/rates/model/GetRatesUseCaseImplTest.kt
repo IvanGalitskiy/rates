@@ -1,6 +1,8 @@
 package com.rates.model
 
 import com.rates.data.RatesRepository
+import com.rates.errors.DefaultValuesAreNotInitializedException
+import com.rates.errors.NoLocalDataFoundException
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.plugins.RxJavaPlugins
@@ -32,7 +34,8 @@ class GetRatesUseCaseImplTest {
     lateinit var calculator: RatesCalculatorImpl
 
 
-    private val baseRates = GetRatesResponse("EUR", listOf(RateModel("RATE_1", 1.0), RateModel("RATE_2", 2.0)))
+    private val baseRates =
+        GetRatesResponse("EUR", listOf(RateModel("RATE_1", 1.0), RateModel("RATE_2", 2.0)))
 
     lateinit var getRatesUseCase: GetRatesUseCaseImpl
     private val testScheduler = TestScheduler()
@@ -59,7 +62,10 @@ class GetRatesUseCaseImplTest {
 
         // assert
         verify(repository).getRates(RatesRequest.DEFAULT_RATE_NAME)
-        verify(calculator).recalculateRatesForAmount(baseRates.rates, RatesRequest.DEFAULT_RATE_AMOUNT)
+        verify(calculator).recalculateRatesForAmount(
+            baseRates.rates,
+            RatesRequest.DEFAULT_RATE_AMOUNT
+        )
 
         observer.dispose()
     }
@@ -156,6 +162,45 @@ class GetRatesUseCaseImplTest {
 
         observer.dispose()
     }
+
+    @Test
+    fun `should return error if required data was not initialized`() {
+        // arrange
+        getRatesUseCase = GetRatesUseCaseImpl(repository, calculator)
+        val ratesObservable = getRatesUseCase.observeRates(null)
+        // act
+        val observer = ratesObservable
+            .subscribeOn(testScheduler)
+            .observeOn(testScheduler)
+            .test()
+        testScheduler.advanceTimeBy(1, TimeUnit.SECONDS)
+        // assert
+        observer.assertError(DefaultValuesAreNotInitializedException::class.java)
+
+        observer.dispose()
+    }
+
+
+    @Test
+    fun `should add proper error to response if repository return empty data`() {
+        // arrange
+        `when`(repository.getRates(anyString())).thenReturn(Single.just(GetRatesResponse("EUR", emptyList())))
+        getRatesUseCase = GetRatesUseCaseImpl(repository, calculator)
+        val ratesObservable = getRatesUseCase.observeRates(RatesRequest())
+        // act
+        val observer = ratesObservable
+            .subscribeOn(testScheduler)
+            .observeOn(testScheduler)
+            .test()
+        testScheduler.advanceTimeBy(TESTING_REPEAT_INTERVAL_IN_MILLIS, TimeUnit.MILLISECONDS)
+        // assert
+        observer.assertValue {
+            it.exception is NoLocalDataFoundException
+        }
+
+        observer.dispose()
+    }
+
 
     companion object {
         private const val TESTING_REPEAT_INTERVAL_IN_MILLIS = 100L
