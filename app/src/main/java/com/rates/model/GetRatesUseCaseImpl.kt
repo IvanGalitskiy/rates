@@ -2,6 +2,7 @@ package com.rates.model
 
 import com.rates.data.RatesRepository
 import com.rates.errors.DefaultValuesAreNotInitializedException
+import com.rates.errors.NoLocalDataFoundException
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.PublishSubject
 import java.lang.IllegalStateException
@@ -18,7 +19,7 @@ class GetRatesUseCaseImpl(
     private val amountChangeSubject = PublishSubject.create<Long>()
     private lateinit var lastRequestedRate: String
     private var lastRequestedAmount: Double = 0.0
-    private var lastReturnedRates = mapOf<String, Double>()
+    private var lastReturnedResponse: GetRatesResponse? = null
 
     @Inject
     constructor(ratesRepository: RatesRepository, ratesCalculator: RatesCalculator) : this(
@@ -27,7 +28,7 @@ class GetRatesUseCaseImpl(
         REQUEST_INTERVAL_IN_MILLIS
     )
 
-    override fun observeRates(ratesRequest: RatesRequest?): Observable<List<RateModel>> {
+    override fun observeRates(ratesRequest: RatesRequest?): Observable<GetRatesResponse> {
         return if (ratesRequest == null && !this::lastRequestedRate.isInitialized) {
             Observable.error(DefaultValuesAreNotInitializedException())
         } else {
@@ -41,26 +42,40 @@ class GetRatesUseCaseImpl(
                 .map { RatesRequest(lastRequestedRate, lastRequestedAmount) }
                 .flatMapSingle {
                     ratesRepository.getRates(it.baseRate)
-                        .doOnSuccess { rates -> lastReturnedRates = rates }
+                        .doOnSuccess { rates ->
+                            if (rates.exception == null) {
+                                lastReturnedResponse = rates
+                            }
+                        }
                 }
                 .mergeWith(recalculateAmount())
-                .flatMapSingle {
+                .flatMapSingle { response ->
                     ratesCalculator.recalculateRatesForAmount(
-                        it,
+                        response.rates,
                         lastRequestedAmount
-                    )
+                    ).map {
+                        response.copy(rates = it)
+                    }
                 }
                 .map {
-                    val list = it.map { entry -> RateModel(entry.key, entry.value) }.toMutableList()
-                    list.add(0, RateModel(lastRequestedRate, lastRequestedAmount))
-                    list
+                    if (it.rates.isEmpty()) {
+                        GetRatesResponse(lastRequestedRate, lastReturnedResponse?.rates ?: emptyList(), NoLocalDataFoundException())
+                    } else {
+                        it
+                    }
                 }
+                .map {
+                    val mutableRates = it.rates.toMutableList()
+                    mutableRates.add(0, RateModel(lastRequestedRate, lastRequestedAmount))
+                    it.copy(rates = mutableRates)
+                }
+
         }
     }
 
     private fun recalculateAmount() =
         amountChangeSubject
-            .map { lastReturnedRates }
+            .map { lastReturnedResponse }
 
     override fun onBaseRateChanged(newBaseRate: String, amount: Double) {
         if (newBaseRate == lastRequestedRate) {

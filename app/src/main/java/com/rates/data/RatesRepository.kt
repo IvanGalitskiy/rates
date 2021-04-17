@@ -1,5 +1,6 @@
 package com.rates.data
 
+import com.rates.model.GetRatesResponse
 import io.reactivex.rxjava3.core.Single
 
 /**
@@ -8,8 +9,8 @@ import io.reactivex.rxjava3.core.Single
 interface RatesRepository {
     /**
      * Gets rates values
-     * @param baseRate base name of currency
+     * @param baseCurrency base name of currency
      * @return map of currency names and values
      */
-    fun getRates(baseRate: String): Single<Map<String, Double>>
+    fun getRates(baseCurrency: String): Single<GetRatesResponse>
 }

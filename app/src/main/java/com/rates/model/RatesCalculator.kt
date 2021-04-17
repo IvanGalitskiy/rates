@@ -13,7 +13,7 @@ interface RatesCalculator {
      * @return map of rate names and money in this currency
      */
     fun recalculateRatesForAmount(
-        rates: Map<String, Double>,
+        rates: List<RateModel>,
         amount: Double
-    ): Single<Map<String, Double>>
+    ): Single<List<RateModel>>
 }

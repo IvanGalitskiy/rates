@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:padding="@dimen/rate_item_padding"
     android:layout_marginTop="@dimen/rate_half_of_margin_between_items"
-    android:layout_marginBottom="@dimen/rate_half_of_margin_between_items"
-    android:padding="@dimen/rate_item_padding">
+    android:layout_marginBottom="@dimen/rate_half_of_margin_between_items">
 
     <ImageView
         android:id="@+id/item_rate_icon"
@@ -43,6 +43,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:autofillHints="@string/rate_autofill_hint"
+        android:imeOptions="flagNoExtractUi"
         android:hint="@string/rate_default_hint"
         android:inputType="numberDecimal"
         android:maxLength="12"

@@ -1,7 +1,11 @@
 package com.rates.di
 
 import com.rates.BuildConfig
+import com.rates.data.ClassToStringConverter
+import com.rates.data.MoshiRatesConverter
 import com.rates.data.RatesApi
+import com.rates.model.GetRatesResponse
+import com.rates.model.RateModel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,7 +17,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class NetworkModule {
+class ApplicationModule {
     @Provides
     @Singleton
     fun provideApi(): RatesApi {
@@ -24,4 +28,9 @@ class NetworkModule {
             .build()
             .create(RatesApi::class.java)
     }
+
+//    @Provides
+//    fun ratesConverter(): ClassToStringConverter<List<RateModel>>{
+//        return MoshiRatesConverter()
+//    }
 }

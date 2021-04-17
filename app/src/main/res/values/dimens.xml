@@ -2,8 +2,10 @@
 <resources>
     <dimen name="rate_image_size">40dp</dimen>
     <dimen name="rate_to_image_margin">18dp</dimen>
-    <dimen name="rate_item_padding">16dp</dimen>
-    <dimen name="rate_half_of_margin_between_items">20dp</dimen>
+    <dimen name="rate_item_padding">8dp</dimen>
+    <dimen name="rate_half_of_margin_between_items">10dp</dimen>
     <dimen name="rate_title_text_size">16sp</dimen>
     <dimen name="rate_size">24sp</dimen>
+    <dimen name="top_list_offset">24dp</dimen>
+    <dimen name="bottom_list_offset">50dp</dimen>
 </resources>

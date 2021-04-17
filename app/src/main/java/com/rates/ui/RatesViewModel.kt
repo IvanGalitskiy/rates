@@ -3,10 +3,12 @@ package com.rates.ui
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.rates.errors.NoLocalDataFoundException
 import com.rates.model.GetRatesUseCase
 import com.rates.model.RatesRequest
 import com.rates.ui.adapter.RatesToRateUiModelsAdapter
 import com.rates.utils.disposeIfNeeded
+import com.rates.utils.isNetworkError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
@@ -20,9 +22,12 @@ class RatesViewModel @Inject constructor(
 ) : ViewModel() {
 
     private var ratesDisposable: Disposable? = null
-    private val ratesLiveData = MutableLiveData<RatesState>()
+    private val ratesLiveData = MutableLiveData<List<RateUiModel>>()
+    private val errorsLiveData = MutableLiveData<Throwable?>()
 
-    fun observeRates(): LiveData<RatesState> = ratesLiveData
+    fun observeRates(): LiveData<List<RateUiModel>> = ratesLiveData
+
+    fun observeErrors(): LiveData<Throwable?> = errorsLiveData
 
     /**
      * screen is hidden, we do not need to eat internet traffic
@@ -44,6 +49,7 @@ class RatesViewModel @Inject constructor(
 
     fun onConnectionEstablished() {
         ratesDisposable.disposeIfNeeded()
+        errorsLiveData.postValue(null)
         startRatesObserving(null)
     }
 
@@ -57,11 +63,31 @@ class RatesViewModel @Inject constructor(
         ratesDisposable = getRatesUseCase.observeRates(ratesRequest)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .map { ratesToRateUiModelAdapter.map(it) }
+            .doOnNext {
+                if (it.rates.size == 1) {
+                    postError(NoLocalDataFoundException())
+                } else {
+                    postError(it.exception)
+                }
+            }
+            .map { ratesToRateUiModelAdapter.map(it.rates) }
             .subscribe({
-                ratesLiveData.postValue(RatesState.Success(it))
+
+                ratesLiveData.postValue(it)
             }, {
-                ratesLiveData.postValue(RatesState.Error(it))
+                postError(it)
             })
+    }
+
+    private fun postError(newError: Throwable?) {
+        val oldError = errorsLiveData.value
+        if (oldError == null ||
+            newError == null ||
+            (oldError.isNetworkError() && !newError.isNetworkError() ||
+            !oldError.isNetworkError() && newError.isNetworkError()) &&
+                    oldError::class != newError::class
+        ) {
+            errorsLiveData.postValue(newError)
+        }
     }
 }

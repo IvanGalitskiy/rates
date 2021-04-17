@@ -2,9 +2,13 @@ package com.rates.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.MenuItem
 import androidx.activity.viewModels
+import androidx.recyclerview.widget.SimpleItemAnimator
 import com.rates.R
 import com.rates.databinding.ActivityMainBinding
+import com.rates.errors.NoLocalDataFoundException
+import com.rates.ui.list.FirstLastItemOffsetDecorator
 import com.rates.ui.list.OnRateChangedCallback
 import com.rates.ui.list.RatesAdapter
 import com.rates.utils.isNetworkError
@@ -17,13 +21,21 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
+    private val edgeItemDecorator by lazy {
+        FirstLastItemOffsetDecorator(
+            this.resources.getDimensionPixelSize(
+                R.dimen.top_list_offset
+            ), this.resources.getDimensionPixelSize(R.dimen.bottom_list_offset)
+        )
+    }
+
     private val adapter = RatesAdapter(object : OnRateChangedCallback {
         override fun onRateChanged(rateName: String, amount: Double) {
             ratesViewModel.onBaseRateChanged(rateName, amount)
         }
 
         override fun onUnexpectedTextEntered() {
-            // todo
+            ErrorMessage.showUnexpectedTypingError(binding.root)
         }
     })
 
@@ -33,6 +45,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         setUpActionBar()
         binding.activityMainList.adapter = adapter
+        (binding.activityMainList.itemAnimator as SimpleItemAnimator).supportsChangeAnimations =
+            false
         observeViewModels()
     }
 
@@ -47,20 +61,36 @@ class MainActivity : AppCompatActivity() {
     private fun observeViewModels() {
         ratesViewModel.observeRates()
             .observe(this, {
-                when (it) {
-                    is RatesState.Success -> {
-                        adapter.submitList(it.rates.toMutableList())
-                        adapter.submitList(it.rates)
+                adapter.submitList(it)
+            })
+
+        ratesViewModel.observeErrors()
+            .observe(this, {
+                if (it == null) {
+                    if (binding.activityMainList.itemDecorationCount > 0) {
+                        binding.activityMainList.removeItemDecoration(edgeItemDecorator)
                     }
-                    is RatesState.Error -> {
-                        if (it.exception.isNetworkError()) {
-                            ErrorMessage.showNetworkError(binding.root) {
-                                ratesViewModel.onConnectionEstablished()
-                            }
+                    ErrorMessage.dismissAllErrors()
+                } else {
+                    binding.activityMainList.addItemDecoration(edgeItemDecorator)
+                    if (it.isNetworkError()) {
+                        ErrorMessage.showNetworkError(binding.root) {
+                            ratesViewModel.onConnectionEstablished()
+                        }
+                    } else if (it is NoLocalDataFoundException) {
+                        ErrorMessage.showNoDataError(binding.root) {
+                            ratesViewModel.onConnectionEstablished()
                         }
                     }
                 }
             })
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            finish()
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onStart() {

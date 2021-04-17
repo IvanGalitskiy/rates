@@ -9,16 +9,15 @@ import javax.inject.Inject
 @OpenForTesting
 class RatesCalculatorImpl @Inject constructor() : RatesCalculator {
     override fun recalculateRatesForAmount(
-        rates: Map<String, Double>,
+        rates: List<RateModel>,
         amount: Double
-    ): Single<Map<String, Double>> {
-        return Observable.fromIterable(rates.entries)
-            .filter { it.value >= 0 }
+    ): Single<List<RateModel>> {
+        return Observable.fromIterable(rates)
+            .filter { it.amount >= 0 }
             .map {
-                val newValue = it.value * amount
-                it.key to newValue
+                val newValue = it.amount * amount
+                it.copy(amount = newValue)
             }
-            .toMap({ it.first }, { it.second })
-            .map { it.toMap() }
+            .toList()
     }
 }
