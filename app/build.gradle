@@ -28,7 +28,7 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            buildConfigField "String", "API_BASE_URL", "https://hiring.revolut.codes/api"
+            buildConfigField "String", "API_BASE_URL", "\"https://hiring.revolut.codes/api\""
         }
         debug {
             testCoverageEnabled true
