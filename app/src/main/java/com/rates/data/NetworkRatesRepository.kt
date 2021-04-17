@@ -2,9 +2,11 @@ package com.rates.data
 
 import com.rates.model.GetRatesResponse
 import com.rates.model.RateModel
+import com.rates.utils.OpenForTesting
 import io.reactivex.rxjava3.core.Single
 import javax.inject.Inject
 
+@OpenForTesting
 class NetworkRatesRepository @Inject constructor(private val api: RatesApi) : RatesRepository {
     override fun getRates(baseCurrency: String): Single<GetRatesResponse> =
         api.getRates(baseCurrency)

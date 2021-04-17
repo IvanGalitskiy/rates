@@ -1,12 +1,14 @@
 package com.rates.data
 
 import com.rates.model.RateModel
+import com.rates.utils.OpenForTesting
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import java.lang.reflect.Type
 
 import javax.inject.Inject
 
+@OpenForTesting
 class MoshiRatesConverter @Inject constructor() : ClassToStringConverter<List<RateModel>> {
     private val moshi = Moshi.Builder().build()
 

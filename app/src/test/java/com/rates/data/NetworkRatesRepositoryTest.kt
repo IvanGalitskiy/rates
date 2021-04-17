@@ -1,5 +1,7 @@
 package com.rates.data
 
+import com.rates.model.GetRatesResponse
+import com.rates.model.RateModel
 import io.reactivex.rxjava3.core.Single
 import org.junit.Test
 import java.net.UnknownHostException
@@ -19,7 +21,7 @@ class NetworkRatesRepositoryTest {
         val repositoryResult = repository.getRates("EUR")
         // assert
         repositoryResult.test()
-            .assertResult(expectedResponse.rates)
+            .assertResult(GetRatesResponse("EUR", listOf(RateModel("EUR", 100.0))))
             .assertNoErrors()
             .dispose()
     }

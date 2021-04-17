@@ -9,14 +9,14 @@ class RatesCalculatorImplTest {
         // arrange
         val calculator = RatesCalculatorImpl()
         val activeAmount = 10.0
-        val rates = mapOf("RATE_1" to 1.0, "RATE_2" to 2.0)
+        val rates = listOf(RateModel("RATE_1", 1.0), RateModel("RATE_2", 2.0))
         // act
         val calculationResult = calculator.recalculateRatesForAmount(rates, activeAmount)
         // assert
         calculationResult.test()
             .assertValue {
-                it["RATE_1"] == 10.0 &&
-                        it["RATE_2"] == 20.0
+                it.find { rate -> rate.rateName == rates[0].rateName }!!.amount == 10.0 &&
+                        it.find { rate -> rate.rateName == rates[1].rateName }!!.amount == 20.0
             }
             .assertNoErrors()
             .dispose()
@@ -27,14 +27,14 @@ class RatesCalculatorImplTest {
         // arrange
         val calculator = RatesCalculatorImpl()
         val activeAmount = 10.0
-        val rates = mapOf("RATE_1" to -1.0, "RATE_2" to 2.0)
+        val rates = listOf(RateModel("RATE_1", -1.0), RateModel("RATE_2", 2.0))
         // act
         val calculationResult = calculator.recalculateRatesForAmount(rates, activeAmount)
         // assert
         calculationResult.test()
             .assertValue {
-                !it.contains("RATE_1") &&
-                        it["RATE_2"] == 20.0
+                it.find { rate -> rate.rateName == rates[0].rateName } == null &&
+                        it.find { rate -> rate.rateName == rates[1].rateName }!!.amount == 20.0
             }
             .assertNoErrors()
             .dispose()

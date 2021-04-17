@@ -32,7 +32,7 @@ class GetRatesUseCaseImplTest {
     lateinit var calculator: RatesCalculatorImpl
 
 
-    private val baseRates = mapOf("RATE_1" to 1.0, "RATE_2" to 2.0)
+    private val baseRates = GetRatesResponse("EUR", listOf(RateModel("RATE_1", 1.0), RateModel("RATE_2", 2.0)))
 
     lateinit var getRatesUseCase: GetRatesUseCaseImpl
     private val testScheduler = TestScheduler()
@@ -41,9 +41,7 @@ class GetRatesUseCaseImplTest {
     fun setUp() {
         MockitoAnnotations.openMocks(this)
         `when`(repository.getRates(anyString())).thenReturn(
-            Single.just(
-                baseRates
-            )
+            Single.just(baseRates)
         )
         getRatesUseCase =
             GetRatesUseCaseImpl(repository, calculator, TESTING_REPEAT_INTERVAL_IN_MILLIS)
@@ -53,7 +51,7 @@ class GetRatesUseCaseImplTest {
     @Test
     fun `should start observing with default params if specific are not present`() {
         // act
-        val observer = getRatesUseCase.observeRates()
+        val observer = getRatesUseCase.observeRates(RatesRequest())
             .test()
             .assertNoErrors()
 
@@ -61,7 +59,7 @@ class GetRatesUseCaseImplTest {
 
         // assert
         verify(repository).getRates(RatesRequest.DEFAULT_RATE_NAME)
-        verify(calculator).recalculateRatesForAmount(baseRates, RatesRequest.DEFAULT_RATE_AMOUNT)
+        verify(calculator).recalculateRatesForAmount(baseRates.rates, RatesRequest.DEFAULT_RATE_AMOUNT)
 
         observer.dispose()
     }
@@ -69,7 +67,7 @@ class GetRatesUseCaseImplTest {
     @Test
     fun `should emit new values each time period`() {
         // act
-        val observer = getRatesUseCase.observeRates()
+        val observer = getRatesUseCase.observeRates(RatesRequest())
             .test()
             .assertNoErrors()
         testScheduler.advanceTimeBy(1, TimeUnit.SECONDS)
@@ -82,7 +80,7 @@ class GetRatesUseCaseImplTest {
     @Test
     fun `should skip repo if only amount was changed`() {
         // arrange
-        val ratesObservable = getRatesUseCase.observeRates()
+        val ratesObservable = getRatesUseCase.observeRates(RatesRequest())
         val observer = ratesObservable
             .takeUntil(Observable.timer(150, TimeUnit.SECONDS))
             .test()
@@ -104,7 +102,7 @@ class GetRatesUseCaseImplTest {
     @Test
     fun `should call only recalculation if same rate name was given`() {
         // arrange
-        val ratesObservable = getRatesUseCase.observeRates()
+        val ratesObservable = getRatesUseCase.observeRates(RatesRequest())
         val observer = ratesObservable
             .takeUntil(Observable.timer(150, TimeUnit.SECONDS))
             .test()
@@ -122,7 +120,7 @@ class GetRatesUseCaseImplTest {
     @Test
     fun `should change request values if new one was given`() {
         // arrange
-        val ratesObservable = getRatesUseCase.observeRates()
+        val ratesObservable = getRatesUseCase.observeRates(RatesRequest())
         val observer = ratesObservable
             .subscribeOn(testScheduler)
             .observeOn(testScheduler)
@@ -144,7 +142,7 @@ class GetRatesUseCaseImplTest {
     fun `should use default time period if not provided`() {
         // arrange
         getRatesUseCase = GetRatesUseCaseImpl(repository, calculator)
-        val ratesObservable = getRatesUseCase.observeRates()
+        val ratesObservable = getRatesUseCase.observeRates(RatesRequest())
         // act
         val observer = ratesObservable
             .subscribeOn(testScheduler)

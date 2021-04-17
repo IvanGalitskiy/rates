@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.rates.model.GetRatesResponse
 import com.rates.model.RateModel
+import com.rates.utils.OpenForTesting
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.reactivex.rxjava3.core.Single
 import javax.inject.Inject
@@ -15,6 +16,7 @@ import javax.inject.Inject
  *
  * I don't know how it's possible to use not fresh currency rates, but offline mode was in requirements
  */
+@OpenForTesting
 class LocalRatesRepository @Inject constructor(
     @ApplicationContext context: Context,
     private val classToStringConverter: ClassToStringConverter<List<RateModel>>

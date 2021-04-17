@@ -72,7 +72,9 @@ class MainActivity : AppCompatActivity() {
                     }
                     ErrorMessage.dismissAllErrors()
                 } else {
-                    binding.activityMainList.addItemDecoration(edgeItemDecorator)
+                    if (binding.activityMainList.itemDecorationCount == 0) {
+                        binding.activityMainList.addItemDecoration(edgeItemDecorator)
+                    }
                     if (it.isNetworkError()) {
                         ErrorMessage.showNetworkError(binding.root) {
                             ratesViewModel.onConnectionEstablished()
